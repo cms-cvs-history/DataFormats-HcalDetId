@@ -84,24 +84,7 @@ HcalDetId::validDetId( HcalSubdetector sd,
 		  ( ( ( ie == 15 ) || ( ie == 16 ) ) && 
 		    ( dp <= 2          )                ) ) ) ||
 	      (  ( sd == HcalEndcap ) &&
-		 ( ( ( ie == 16 ) &&
-		     ( dp ==  3 )          ) ||
-		   ( ( ie == 17 ) &&
-		     ( dp ==  1 )          ) ||
-		   ( ( ie >= 18 ) &&
-		     ( ie <= 20 ) &&
-		     ( dp <=  2 )          ) ||
-		   ( ( ie >= 21 ) &&
-		     ( ie <= 26 ) &&
-		     ( dp <=  2 ) &&
-		     ( ip%2 == 1 )         ) ||
-		   ( ( ie >= 27 ) &&
-		     ( ie <= 28 ) &&
-		     ( dp <=  3 ) &&
-		     ( ip%2 == 1 )         ) ||
-		   ( ( ie == 29 ) &&
-		     ( dp <=  2 ) &&
-		     ( ip%2 == 1 )         )          )      ) ||
+                 ( dp <= maxDepthHE )      ) || 
 	      (  ( sd == HcalOuter ) &&
 		 ( ie <= 15 ) &&
 		 ( dp ==  4 )           ) ||
@@ -137,12 +120,9 @@ HcalDetId::hashed_index() const
    return ( ( sd == HcalBarrel ) ?
 	    ( ip - 1 )*18 + dp - 1 + ie - ( ie<16 ? 1 : 0 ) + zn*kHBhalf :
 	    ( ( sd == HcalEndcap ) ?
-	      2*kHBhalf + ( ip - 1 )*8 + ( ip/2 )*20 +
-	      ( ( ie==16 || ie==17 ) ? ie - 16 :
-		( ( ie>=18 && ie<=20 ) ? 2 + 2*( ie - 18 ) + dp - 1 :
-		  ( ( ie>=21 && ie<=26 ) ? 8 + 2*( ie - 21 ) + dp - 1 :
-		    ( ( ie>=27 && ie<=28 ) ? 20 + 3*( ie - 27 ) + dp - 1 :
-		      26 + 2*( ie - 29 ) + dp - 1 ) ) ) ) + zn*kHEhalf :
+              2*kHBhalf + ( (ie<=20) ? ( ip - 1 )*(maxDepthHE*14) :
+                                       ( ip/2   )*(maxDepthHE*14) ) +
+                        maxDepthHE*( ie - 16 ) + (dp - 1) + zn*kHEhalf :
 	      ( ( sd == HcalOuter ) ?
 		2*kHBhalf + 2*kHEhalf + ( ip - 1 )*15 + ( ie - 1 ) + zn*kHOhalf :
 		( ( sd == HcalForward ) ?
@@ -194,19 +174,13 @@ HcalDetId::detIdFromDenseIndex( uint32_t di )
 	       sd  = HcalEndcap ;
 	       in -= 2*kHBhalf ;
 	       iz  = ( in<kHEhalf ? 1 : -1 ) ;
-	       in %= kHEhalf ; 
-	       ip  = 2*( in/36 ) ;
-	       in %= 36 ;
-	       ip += 1 + in/28 ;
-	       if( 0 == ip%2 ) in %= 28 ;
-	       ie  = 15 + ( in<2 ? 1 + in : 2 + 
-			    ( in<20 ? 1 + ( in - 2 )/2 : 9 +
-			      ( in<26 ? 1 + ( in - 20 )/3 : 3 ) ) ) ;
-	       dp  = ( in<1 ? 3 :
-		       ( in<2 ? 1 : 
-			 ( in<20 ? 1 + ( in - 2 )%2 : 
-			   ( in<26 ? 1 + ( in - 20 )%3 : 
-			     ( 1 + ( in - 26 )%2 ) ) ) ) ) ;
+	       in %= kHEhalf ;
+               ie  = (in%(maxDepthHE*14))/maxDepthHE + 16;
+               ip = (ie <=20) ? ( in/(maxDepthHE*14) + 1 ) :
+                              2*(in/(maxDepthHE*14)) + 1;
+               in %= (maxDepthHE*14); 
+               in %=  maxDepthHE; 
+               dp = in + 1;
 	    }
 	    else // barrel
 	    {

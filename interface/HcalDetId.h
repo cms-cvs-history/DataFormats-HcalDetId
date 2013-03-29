@@ -9,8 +9,8 @@
 /** \class HcalDetId
  *  Cell identifier class for the HCAL subdetectors, precision readout cells only
  *
- *  $Date: 2011/05/29 18:43:20 $
- *  $Revision: 1.15 $
+ *  $Date: 2012/12/10 17:00:31 $
+ *  $Revision: 1.1 $
  *  \author J. Mans - Minnesota
  *
  *  Rev.1.11: A.Kubik,R.Ofierzynski: add the hashed_index
@@ -65,12 +65,12 @@ public:
 
   static const HcalDetId Undefined;
 
-  static const int maxDepthHB=2, maxDepthHE=3;
+  static const int maxDepthHB=2, maxDepthHE=7;
 
 private:
 
   enum { kHBhalf = 1296 ,
-	 kHEhalf = 1296 ,
+	 kHEhalf = maxDepthHE*683 + 6 ,
 	 kHOhalf = 1080 ,
 	 kHFhalf = 864  ,
 	 kHcalhalf = kHBhalf + kHEhalf + kHOhalf + kHFhalf } ;
